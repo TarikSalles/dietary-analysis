@@ -52,12 +52,6 @@ class Entrada(BaseModel):
     prato: Optional[str] = ""
     peso: Optional[float] = None
 
-def get_sheet():
-    scopes = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scopes)
-    client = gspread.authorize(creds)
-    return client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
-
 @app.post("/registrar")
 async def registrar(entrada: Entrada):
     try:
