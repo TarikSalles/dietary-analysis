@@ -57,24 +57,22 @@ def get_sheet():
     return client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
 
 @app.post("/registrar")
-def registrar(entrada: Entrada):
+async def registrar(entrada: Entrada):
     try:
         sheet = get_sheet()
         linha = [
-    entrada.data,
-    entrada.refeicao,
-    float(entrada.calorias),
-    entrada.prato or "",
-    float(entrada.peso) if entrada.peso is not None else "",
-]
+            entrada.data,
+            entrada.refeicao,
+            float(entrada.calorias),
+            entrada.prato or "",
+            float(entrada.peso) if entrada.peso is not None else "",
+        ]
         sheet.append_row(linha, value_input_option='USER_ENTERED')
-        return {"ok": True, "linha": linha}
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="service_account.json não encontrado")
+        return {"status": "ok"}
     except Exception as e:
-        print(f"ERRO: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
+        import traceback
+        print("ERRO DETALHADO:", traceback.format_exc())
+        raise
 @app.get("/health")
 def health():
     return {"status": "ok"}
