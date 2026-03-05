@@ -6,7 +6,7 @@
 
 ## O que é isso?
 
-DietPlanner nasceu de uma necessidade simples e pessoal minha, que é registrar minhas refeições diárias e entender padrões alimentares ao longo do tempo. O que começou como uma planilha manual evoluiu para um pipeline completo, desde o formulário de entrada até um dashboard interativo no Power BI, com cálculo automático de macronutrientes via Claude AI.
+O meu projeto DietPlanner foi criado de uma necessidade simples e pessoal, que é registrar minhas refeições diárias e entender padrões alimentares ao longo do tempo. O que começou como uma planilha manual evoluiu para um pipeline completo, desde o formulário de entrada até um dashboard interativo no Power BI, com cálculo automático de macronutrientes via Claude AI.
 
 A ideia central é que o usuário não precise pensar em infraestrutura. Você registra o que comeu em detalhe de forma textual, uma estimativa das calorias consumidas e o sistema calcula os macros, armazena tudo e atualiza o dashboard automaticamente.
 
@@ -15,12 +15,12 @@ A ideia central é que o usuário não precise pensar em infraestrutura. Você r
 ## Como funciona
 
 ```
-Você preenche o formulário
-FastAPI recebe e salva no Google Sheets
-Apps Script detecta a entrada e chama a API do Claude
-Claude estima carboidratos, proteínas e gorduras com base no seu prato e quantidade de calorias estimadas
-Power BI Service lê os dados e atualiza o dashboard
-Você visualiza seu progresso em tempo real
+1. Você preenche o formulário
+2. FastAPI recebe e salva no Google Sheets
+3. Apps Script detecta a entrada e chama a API do Claude
+4. Claude (claude-haiku-4-5) estima carboidratos, proteínas e gorduras com base no seu prato e quantidade de calorias estimadas
+5. Power BI Service lê os dados e atualiza o dashboard
+6. Você visualiza seu progresso em tempo real
 
 ```
 
@@ -54,6 +54,6 @@ O Google Sheets nesse caso funciona como banco de dados, o Power BI transforma o
 
 * Visualização: Power BI Desktop
 
-Hospedagem: Render
+* Hospedagem: Render
 
 ---
