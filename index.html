@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análise de Progresso</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --border: #2a2a2a;       /* era #1e1e1e — um pouco mais visível */
+  --accent: #e8e8e8;       /* era #00ff88 — branco/prata */
+  --accent2: #ff3c6e;      /* mantém vermelho para Esteira */
+  --text: #e8e8e8;
+  --muted: #555;
+  --radius: 16px;
+}
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .header .badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      border: 1px solid rgba(0,255,136,0.3);
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .header h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .header h1 span {
+      color: var(--accent);
+    }
+
+    .header p {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Nav buttons */
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 48px;
+      animation: fadeDown 0.8s 0.15s ease both;
+    }
+
+    .nav-btn {
+      padding: 12px 28px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,255,136,0.05);
+      box-shadow: 0 0 20px rgba(0,255,136,0.1);
+    }
+
+    /* Panels */
+    .panel {
+      width: 100%;
+      max-width: 1280px;
+      display: none;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .panel.active { display: block; }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.4;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 28px;
+      letter-spacing: -0.5px;
+    }
+
+    .card h2 span {
+      color: var(--accent);
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input, select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      padding: 12px 16px;
+      transition: all 0.2s;
+      outline: none;
+      width: 100%;
+      appearance: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+    }
+
+    select option { background: #111; }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: #000;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,255,136,0.25); }
+    .btn-submit:hover::after { opacity: 0.08; }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 14px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: var(--accent2); color: var(--accent2); }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Dashboard panel */
+    .dashboard-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dashboard-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dashboard-header span {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .iframe-wrapper {
+    position: relative;
+    width: 100%;
+    height: 1280px;
+    overflow: hidden;
+}
+
+    .iframe-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      opacity: 0;
+      transition: opacity 1s ease 0.5s;
+    }
+
+    .iframe-wrapper iframe.loaded { opacity: 1; }
+
+    .iframe-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--bg);
+      transition: opacity 0.5s ease 0.3s;
+    }
+
+    .iframe-loader.hidden { opacity: 0; pointer-events: none; }
+
+    .loader-ring {
+      width: 48px; height: 48px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loader-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    .iframe-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--bg);
+    }
+
+    .placeholder-icon {
+      font-size: 48px;
+      opacity: 0.3;
+    }
+
+    .placeholder-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .btn-open-pbi {
+      margin-top: 8px;
+      padding: 10px 24px;
+      border-radius: 100px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-open-pbi:hover {
+      background: rgba(0,255,136,0.1);
+    }
+
+    /* Setup notice */
+    .setup-notice {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,60,110,0.3);
+      background: rgba(255,60,110,0.05);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: #ff6b8a;
+      line-height: 1.8;
+      display: none;
+    }
+
+    .setup-notice.show { display: block; }
+    .setup-notice strong { color: var(--accent2); }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="header">
+    <h1>Diet<span>Planner</span></h1>
+  </header>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPanel('form')">Registrar Alimentação</button>
+    <button class="nav-btn" onclick="showPanel('dashboard')">Meu Progresso</button>
+  </nav>
+
+  <!-- FORM PANEL -->
+  <div class="panel active" id="panel-form">
+    <div class="card">
+      <h2>Nova <span>entrada</span></h2>
+      <form id="entryForm">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="data" required/>
+          </div>
+
+          <div class="form-group">
+            <label>Refeição</label>
+            <select id="refeicao" required>
+              <option value="">Selecione...</option>
+              <option>Café da Manhã</option>
+              <option>Almoco</option>
+              <option>Tarde</option>
+              <option>Janta</option>
+              <option>Esteira</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Calorias (kcal)</label>
+            <input type="number" id="calorias" placeholder="ex: 350" required/>
+          </div>
+
+          <div class="form-group">
+            <label>Peso Atual (kg)</label>
+            <input type="number" id="peso" placeholder="ex: 89.2" step="0.1"/>
+          </div>
+
+          <div class="form-group full" id="pratoGroup">
+            <label>Prato (alimentos)</label>
+            <input type="text" id="prato" placeholder="ex: frango, arroz, cenoura"/>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          Enviar registro
+        </button>
+      </form>
+
+      <div class="setup-notice" id="setupNotice">
+        <strong>⚠ Backend não encontrado</strong><br/>
+        Para salvar no Google Sheets, inicie o servidor:<br/><br/>
+        <code>cd healthdash && python main.py</code><br/><br/>
+        Veja o arquivo <strong>SETUP.md</strong> para configurar a Service Account.
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PANEL -->
+  <div class="panel" id="panel-dashboard">
+    <div class="dashboard-card">
+      <div class="dashboard-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace"></span>
+          <div class="status-dot"></div>
+        </div>
+      </div>
+
+      <div class="iframe-wrapper" id="iframeWrapper">
+        <!-- Placeholder when no URL configured -->
+        <div class="iframe-placeholder" id="iframePlaceholder">
+          <div class="placeholder-icon"></div>
+          <div class="placeholder-text">
+            Cole a URL do Power BI<br/>
+            no arquivo <strong style="color:var(--accent)">config.js</strong><br/>
+            para exibir o dashboard
+          </div>
+          <button class="btn-open-pbi" onclick="openPBI()">Abrir Power BI →</button>
+        </div>
+
+        <!-- Loader -->
+        <div class="iframe-loader" id="iframeLoader" style="display:none">
+          <div class="loader-ring"></div>
+          <div class="loader-text">CARREGANDO DASHBOARD...</div>
+        </div>
+
+        <!-- Iframe -->
+        <iframe id="pbiFrame" title="Power BI Dashboard" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="dot"></div>
+  <span id="toastMsg">mensagem</span>
+</div>
+
+<script>
+  // ── CONFIG ───────────────────────────────────────────
+const BACKEND_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:8000'
+  : window.location.origin;
+
+let POWERBI_URL = '';
+
+async function initConfig() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/config`);
+    const data = await res.json();
+    POWERBI_URL = data.powerbi_url || '';
+  } catch(e) {
+    console.log('Config não disponível');
+  }
+}
+
+
+  // ─────────────────────────────────────────────────────
+
+
+  // Set today's date
+  document.getElementById('data').valueAsDate = new Date();
+
+  // Esteira logic
+  document.getElementById('refeicao').addEventListener('change', function() {
+    const isEsteira = this.value === 'Esteira';
+    document.getElementById('pratoGroup').style.display = isEsteira ? 'none' : 'flex';
+    const calGroup = document.getElementById('calorias').closest('.form-group');
+    const calLabel = calGroup.querySelector('label');
+    if (isEsteira) {
+      calLabel.textContent = 'Calorias queimadas (kcal)';
+      document.getElementById('calorias').placeholder = 'ex: 88';
+    } else {
+      calLabel.textContent = 'Calorias (kcal)';
+      document.getElementById('calorias').placeholder = 'ex: 350';
+    }
+  });
+
+  // Panel switching
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    if (name === 'dashboard') loadDashboard();
+  }
+
+  // Load Power BI iframe with animation
+  async function loadDashboard() {
+    const wrapper = document.getElementById('iframeWrapper');
+    const placeholder = document.getElementById('iframePlaceholder');
+    const loader = document.getElementById('iframeLoader');
+    const frame = document.getElementById('pbiFrame');
+
+    if (!POWERBI_URL) return; // show placeholder
+
+    placeholder.style.display = 'none';
+    loader.style.display = 'flex';
+    frame.src = POWERBI_URL;
+
+    frame.onload = () => {
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        frame.classList.add('loaded');
+      }, 300);
+    };
+  }
+initConfig();
+  function openPBI() {
+    if (POWERBI_URL) window.open(POWERBI_URL, '_blank');
+    else showToast('Configure POWERBI_URL no arquivo index.html', 'error');
+  }
+
+  // Form submit
+  document.getElementById('entryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const refeicao = document.getElementById('refeicao').value;
+    const isEsteira = refeicao === 'Esteira';
+    let calorias = parseFloat(document.getElementById('calorias').value);
+    if (isEsteira) calorias = -Math.abs(calorias);
+
+    const payload = {
+      data: (() => {
+  const d = document.getElementById('data').value; // 2026-03-03
+  const [y, m, dia] = d.split('-');
+  return `${dia}/${m}/${y}`; // 03/03/2026
+})(),
+      refeicao,
+      calorias,
+      prato: isEsteira ? '' : (document.getElementById('prato').value || ''),
+      peso: document.getElementById('peso').value ? parseFloat(document.getElementById('peso').value.replace(',', '.')) : null,
+
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/registrar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      showToast('Registro salvo com sucesso!', 'success');
+      document.getElementById('refeicao').value = '';
+      document.getElementById('calorias').value = '';
+      document.getElementById('prato').value = '';
+      document.getElementById('peso').value = '';
+      document.getElementById('setupNotice').classList.remove('show');
+
+    } catch (err) {
+      document.getElementById('setupNotice').classList.add('show');
+      showToast('Backend offline. Veja instruções abaixo.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar registro';
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>
