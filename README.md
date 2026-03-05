@@ -44,11 +44,16 @@ O Google Sheets nesse caso funciona como banco de dados, o Power BI transforma o
 
 ## Tecnologias
 
-Frontend: HTML, CSS, JavaScript puro
-Backend: Python + FastAPI
-Banco de dados: Google Sheets via API
-Automação de macros: Google Apps Script + Claude API
-Visualização: Power BI Desktop
+* Frontend: HTML, CSS, JavaScript puro
+
+* Backend: Python + FastAPI
+
+* Banco de dados: Google Sheets via API
+
+* Automação de macros: Google Apps Script + Claude API
+
+* Visualização: Power BI Desktop
+
 Hospedagem: Render
 
 ---
