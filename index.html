@@ -488,10 +488,8 @@
       </form>
 
       <div class="setup-notice" id="setupNotice">
-        <strong>⚠ Backend não encontrado</strong><br/>
-        Para salvar no Google Sheets, inicie o servidor:<br/><br/>
-        <code>cd healthdash && python main.py</code><br/><br/>
-        Veja o arquivo <strong>SETUP.md</strong> para configurar a Service Account.
+        <strong>Erro no Backend</strong><br/>
+        Um erro inesperado ocorreu no backend.
       </div>
     </div>
   </div>
@@ -590,24 +588,26 @@ async function initConfig() {
 
   // Load Power BI iframe with animation
   async function loadDashboard() {
-    const wrapper = document.getElementById('iframeWrapper');
-    const placeholder = document.getElementById('iframePlaceholder');
-    const loader = document.getElementById('iframeLoader');
-    const frame = document.getElementById('pbiFrame');
+  // Aguarda config carregar primeiro
+  if (!POWERBI_URL) await initConfig();
 
-    if (!POWERBI_URL) return; // show placeholder
+  const placeholder = document.getElementById('iframePlaceholder');
+  const loader = document.getElementById('iframeLoader');
+  const frame = document.getElementById('pbiFrame');
 
-    placeholder.style.display = 'none';
-    loader.style.display = 'flex';
-    frame.src = POWERBI_URL;
+  if (!POWERBI_URL) return;
 
-    frame.onload = () => {
-      setTimeout(() => {
-        loader.classList.add('hidden');
-        frame.classList.add('loaded');
-      }, 300);
-    };
-  }
+  placeholder.style.display = 'none';
+  loader.style.display = 'flex';
+  frame.src = POWERBI_URL;
+
+  frame.onload = () => {
+    setTimeout(() => {
+      loader.classList.add('hidden');
+      frame.classList.add('loaded');
+    }, 300);
+  };
+}
 initConfig();
   function openPBI() {
     if (POWERBI_URL) window.open(POWERBI_URL, '_blank');
