@@ -32,7 +32,9 @@ def get_sheet():
     scopes = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds_json = os.getenv("GOOGLE_CREDENTIALS")
     if creds_json:
-        creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=scopes)
+    # Remove espaços extras e normaliza
+       creds_info = json.loads(creds_json.strip())
+       creds = Credentials.from_service_account_info(creds_info, scopes=scopes)
     else:
         creds = Credentials.from_service_account_file("service_account.json", scopes=scopes)
     client = gspread.authorize(creds)
