@@ -8,6 +8,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import date
 import os
+import json
 
 app = FastAPI()
 
